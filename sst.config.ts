@@ -57,8 +57,30 @@ export default $config({
         ? "https://staging.ateedtech.com"
         : "http://localhost:3000";
 
+    // Production CloudFront distribution (alias www.ateedtech.com). The
+    // /api/revalidate webhook invalidates this so Contentful edits clear the
+    // CDN edge cache immediately instead of waiting out the 1h s-maxage TTL.
+    const prodDistributionId = "E3KDAMVKB2YACU";
+
     new sst.aws.Nextjs("AteedWeb", {
       domain,
+      // Let the server function invalidate the production distribution.
+      transform: isProd
+        ? {
+            server: (args) => {
+              // SST grants the server's own access via resource links, so this
+              // field is unset by default — assigning here adds our policy.
+              args.permissions = [
+                {
+                  actions: ["cloudfront:CreateInvalidation"],
+                  resources: [
+                    `arn:aws:cloudfront::367826605341:distribution/${prodDistributionId}`,
+                  ],
+                },
+              ];
+            },
+          }
+        : undefined,
       environment: {
         CONTENTFUL_SPACE_ID: contentfulSpaceId.value,
         CONTENTFUL_ACCESS_TOKEN: contentfulAccessToken.value,
@@ -71,6 +93,7 @@ export default $config({
         AUDIT_NOTIFICATION_EMAIL: auditNotificationEmail.value,
         CONTENTFUL_REVALIDATE_SECRET: contentfulRevalidateSecret.value,
         NEXT_PUBLIC_SITE_URL: siteUrl,
+        ...(isProd ? { CLOUDFRONT_DISTRIBUTION_ID: prodDistributionId } : {}),
       },
     });
   },

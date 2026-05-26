@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import {
+  CloudFrontClient,
+  CreateInvalidationCommand,
+} from "@aws-sdk/client-cloudfront";
 
 // The endpoint itself must never be cached.
 export const dynamic = "force-dynamic";
@@ -36,9 +40,37 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Small marketing site, and any content type can surface on multiple pages,
-  // so refresh everything under the root layout in one shot.
+  // 1) Refresh the Next.js/origin cache so the page regenerates with new content.
   revalidatePath("/", "layout");
 
-  return NextResponse.json({ revalidated: true, now: Date.now() });
+  // 2) Drop CloudFront's edge cache. Without this, the CDN keeps serving the old
+  //    HTML until its s-maxage TTL (1h) expires — revalidatePath only updates the
+  //    origin. Best-effort: a CloudFront failure must not fail the webhook, since
+  //    the origin is already revalidated (the edge would still catch up via TTL).
+  const distributionId = process.env.CLOUDFRONT_DISTRIBUTION_ID;
+  let edgeInvalidated = false;
+  if (distributionId) {
+    try {
+      const cloudfront = new CloudFrontClient({ region: "us-east-1" });
+      await cloudfront.send(
+        new CreateInvalidationCommand({
+          DistributionId: distributionId,
+          InvalidationBatch: {
+            CallerReference: `contentful-${Date.now()}`,
+            Paths: { Quantity: 1, Items: ["/*"] },
+          },
+        }),
+      );
+      edgeInvalidated = true;
+    } catch (error) {
+      // Log server-side only; don't leak details to the caller.
+      console.error("CloudFront invalidation failed:", error);
+    }
+  }
+
+  return NextResponse.json({
+    revalidated: true,
+    edgeInvalidated,
+    now: Date.now(),
+  });
 }

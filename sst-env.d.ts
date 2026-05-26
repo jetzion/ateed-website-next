@@ -18,6 +18,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "ContentfulRevalidateSecret": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "ContentfulSpaceId": {
       "type": "sst.sst.Secret"
       "value": string
