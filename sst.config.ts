@@ -33,12 +33,14 @@ export default $config({
     const isProd = $app.stage === "production";
     const isStaging = $app.stage === "staging";
 
-    // Domain stays undefined until Route 53 is configured.
-    // First deploy runs against the default CloudFront URL.
+    // Production attaches www.ateedtech.com via manual DNS at GoDaddy
+    // (apex redirect handled via GoDaddy Forwarding, not at AWS).
+    // Staging stays on its default CloudFront URL.
     const domain = isProd
       ? {
           name: "www.ateedtech.com",
-          redirects: ["ateedtech.com"],
+          dns: false as const,
+          cert: "arn:aws:acm:us-east-1:367826605341:certificate/8b524bae-d1cc-4dad-9c07-7aa630d2cbec",
         }
       : undefined;
 
