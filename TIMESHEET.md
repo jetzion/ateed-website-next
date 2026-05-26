@@ -3,7 +3,7 @@
 **Project:** Ateed Tech Website (Next.js)
 **Developer:** Ajay
 **Period:** January 7 – May 26, 2026
-**Total Hours:** ~28.5 hours
+**Total Hours:** ~25.5 hours
 
 ## Daily Breakdown
 
@@ -16,8 +16,8 @@
 | Mar 13     | 0.5h  | Research and planning                                        |
 | Mar 14     | 4.25h | Free Website Audit feature, SEO enhancements, security headers, nav CTA buttons, Contentful null safety |
 | Mar 15     | 3.5h  | AI chatbot, contact form, mobile menu, button styling        |
-| May 26     | 6.5h  | Services card detail modal (Contentful modalContent), hero scroll-cue animation + load resilience, Contentful on-demand revalidation (webhook + CloudFront invalidation), blog image optimization fixes, AWS Lambda concurrency fix, multiple production deployments |
-| **Total**  | **~28.5h** |                                                         |
+| May 26     | 3.5h  | Services card detail modal (Contentful modalContent), hero scroll-cue animation + load resilience, Contentful on-demand revalidation (webhook + CloudFront invalidation), blog image optimization fixes, AWS Lambda concurrency fix, multiple production deployments |
+| **Total**  | **~25.5h** |                                                         |
 
 ## Notes
 
