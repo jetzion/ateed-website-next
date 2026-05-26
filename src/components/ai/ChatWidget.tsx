@@ -109,9 +109,17 @@ export function ChatWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [
-            ...updatedMessages.filter((m) => m.content !== GREETING && m.type !== "contact-form"),
+            ...updatedMessages.filter(
+              (m) => m.content !== GREETING && m.type !== "contact-form",
+            ),
             ...(formSubmittedRef.current
-              ? [{ role: "system" as const, content: "NOTE: The visitor has already submitted their contact details via the form. Do NOT ask them to fill in details again or mention the form. Just answer their question helpfully." }]
+              ? [
+                  {
+                    role: "system" as const,
+                    content:
+                      "NOTE: The visitor has already submitted their contact details via the form. Do NOT ask them to fill in details again or mention the form. Just answer their question helpfully.",
+                  },
+                ]
               : []),
           ],
         }),
@@ -123,7 +131,8 @@ export function ChatWidget() {
           const copy = [...prev];
           copy[copy.length - 1] = {
             role: "assistant",
-            content: error.error || "Sorry, something went wrong. Please try again.",
+            content:
+              error.error || "Sorry, something went wrong. Please try again.",
           };
           return copy;
         });
@@ -181,13 +190,19 @@ export function ChatWidget() {
     } finally {
       setIsStreaming(false);
 
-      // After streaming completes, check if bot is offering to connect with Jack
+      // After streaming completes, check if bot is offering to connect with the sales team
       if (!formShownRef.current) {
         setMessages((prev) => {
           const lastMsg = prev[prev.length - 1];
-          if (lastMsg?.role === "assistant" && shouldShowContactForm(lastMsg.content)) {
+          if (
+            lastMsg?.role === "assistant" &&
+            shouldShowContactForm(lastMsg.content)
+          ) {
             formShownRef.current = true;
-            return [...prev, { role: "assistant", content: "", type: "contact-form" as const }];
+            return [
+              ...prev,
+              { role: "assistant", content: "", type: "contact-form" as const },
+            ];
           }
           return prev;
         });
@@ -199,13 +214,19 @@ export function ChatWidget() {
     // Use only the last user message — it's the project-relevant one.
     // Full conversation context is sent separately in the email.
     const userMessages = messages.filter((m) => m.role === "user" && m.content);
-    return userMessages.length > 0 ? userMessages[userMessages.length - 1].content : "";
+    return userMessages.length > 0
+      ? userMessages[userMessages.length - 1].content
+      : "";
   }
 
   function shouldShowContactForm(text: string): boolean {
     const lower = text.toLowerCase();
-    const mentionsJack = lower.includes("jack");
+    const mentionsTeam =
+      lower.includes("sales team") ||
+      lower.includes("our team") ||
+      lower.includes("the team");
     const mentionsHandoff =
+      lower.includes("call you") ||
       lower.includes("connect") ||
       lower.includes("reach out") ||
       lower.includes("follow up") ||
@@ -215,7 +236,7 @@ export function ChatWidget() {
       lower.includes("details below") ||
       lower.includes("info below") ||
       lower.includes("your details");
-    return mentionsJack && mentionsHandoff;
+    return mentionsTeam && mentionsHandoff;
   }
 
   async function handleContactSubmit(data: {
@@ -291,8 +312,9 @@ export function ChatWidget() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-white">Chat with AI</h2>
-                <p className="text-xs text-text-tertiary">Ateed Tech Assistant</p>
+                <h2 className="text-sm font-semibold text-white">
+                  Ateed Tech Assistant
+                </h2>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -316,25 +338,25 @@ export function ChatWidget() {
                   <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
                 </svg>
               </button>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-text-tertiary transition-colors hover:bg-bg-dark-secondary hover:text-white"
-              aria-label="Close chat"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <button
+                onClick={() => setIsOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-text-tertiary transition-colors hover:bg-bg-dark-secondary hover:text-white"
+                aria-label="Close chat"
               >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -342,10 +364,14 @@ export function ChatWidget() {
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.map((msg, i) =>
               msg.type === "contact-form" ? (
-                <ChatContactForm key={i} initialNote={buildProjectSummary()} onSubmit={handleContactSubmit} />
+                <ChatContactForm
+                  key={i}
+                  initialNote={buildProjectSummary()}
+                  onSubmit={handleContactSubmit}
+                />
               ) : (
                 <ChatMessage key={i} role={msg.role} content={msg.content} />
-              )
+              ),
             )}
             {isStreaming && messages[messages.length - 1]?.content === "" && (
               <div className="flex justify-start">
@@ -364,7 +390,10 @@ export function ChatWidget() {
             {isAtLimit ? (
               <p className="text-center text-xs text-text-secondary">
                 Session limit reached. Please call{" "}
-                <a href="tel:+15614628333" className="text-accent hover:underline">
+                <a
+                  href="tel:+15614628333"
+                  className="text-accent hover:underline"
+                >
                   +1-561-462-8333
                 </a>{" "}
                 or use our contact form.

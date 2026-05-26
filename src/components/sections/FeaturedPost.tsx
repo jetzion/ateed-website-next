@@ -40,7 +40,7 @@ export function FeaturedPost({
           trigger: cardRef.current,
           start: "top 80%",
         },
-      }
+      },
     );
   }, []);
 
@@ -53,17 +53,22 @@ export function FeaturedPost({
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
         border: "1px solid rgba(59,141,214,0.08)",
-        boxShadow: "0 4px 24px rgba(30,80,160,0.06), 0 1px 3px rgba(0,0,0,0.03)",
+        boxShadow:
+          "0 4px 24px rgba(30,80,160,0.06), 0 1px 3px rgba(0,0,0,0.03)",
       }}
     >
       <div className="flex flex-col md:flex-row-reverse">
         {/* Image */}
         {imageUrl && (
-          <Link href={`/blog/${slug}`} className="md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+          <Link
+            href={`/blog/${slug}`}
+            className="md:w-1/2 relative h-64 md:h-auto overflow-hidden"
+          >
             <Image
               src={imageUrl}
               alt={title}
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
           </Link>
@@ -96,6 +101,7 @@ export function FeaturedPost({
                     src={authorAvatar}
                     alt={authorName}
                     fill
+                    sizes="40px"
                     className="object-cover"
                   />
                 </div>
@@ -105,9 +111,7 @@ export function FeaturedPost({
               </span>
             </div>
 
-            <time className="text-sm text-text-tertiary">
-              {publishDate}
-            </time>
+            <time className="text-sm text-text-tertiary">{publishDate}</time>
           </div>
         </div>
       </div>

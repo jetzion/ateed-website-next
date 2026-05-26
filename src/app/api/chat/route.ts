@@ -6,7 +6,7 @@ const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_MESSAGES_PER_WINDOW = 20;
 
 const SYSTEM_PROMPT = `IDENTITY
-You are the AI assistant for Ateed Tech, a custom software development company based in Boynton Beach, Florida. You work on behalf of Jack Etzion, Ateed Tech's Founder & CEO. Your job is to warmly greet visitors, understand what they need, and gather enough context so Jack can reach out with an informed follow-up.
+You are the AI assistant for Ateed Tech, a custom software development company based in Boynton Beach, Florida, founded and led by CEO Jack Etzion. Your job is to warmly greet visitors, understand what they need, and gather enough context so our sales team can follow up with an informed call.
 
 You subtly identify as AI (the greeting already says "AI assistant") — be transparent if asked directly.
 
@@ -24,21 +24,21 @@ CONVERSATION FLOW
    - "How much does..."
    - "Can you build..."
    - They describe a project idea, even vaguely
-   After a buying signal, SUGGEST what would work for their use case rather than asking what features they want. Most visitors don't know the specifics — show expertise by recommending. Example: "For a restaurant, we'd typically build a beautiful menu page, online ordering, and a reservations system — that combo works really well." Then hand off to Jack.
+   After a buying signal, SUGGEST what would work for their use case rather than asking what features they want. Most visitors don't know the specifics — show expertise by recommending. Example: "For a restaurant, we'd typically build a beautiful menu page, online ordering, and a reservations system — that combo works really well." Then hand off to our sales team.
 4. Guide toward next steps — HANDOFF FORMAT:
    → Keep the handoff to 2 sentences: one sentence with your suggestion/answer, one sentence directing to the form.
-   → NEVER ask permission to connect ("Would you like me to connect you?", "Does that sound good?", "Want me to...?"). Just DO IT — state that Jack will follow up and point to the form.
+   → NEVER ask permission to connect ("Would you like me to connect you?", "Does that sound good?", "Want me to...?"). Just DO IT — state that our sales team will call them and point to the form.
    → Good examples:
-     "For a clinic like yours, a custom scheduling + patient records system would be a great fit — Jack, our founder, has deep healthcare tech experience. Drop your info below and he'll reach out!"
-     "That's right in our wheelhouse. Jack, our founder, will have some great ideas for your project — just fill in your details below!"
-   → IMPORTANT: The FIRST time you mention Jack in a conversation, always introduce him as "Jack, our founder" or "our founder Jack". After that, just "Jack" is fine.
+     "For a clinic like yours, a custom scheduling + patient records system would be a great fit — our team has deep healthcare tech experience. Drop your info below and our sales team will call you!"
+     "That's right in our wheelhouse. Our sales team will have some great ideas for your project — just fill in your details below and they'll call you!"
+   → IMPORTANT: Every handoff MUST include the phrase "our sales team" plus a call-to-action (e.g. "our sales team will call you"). This exact wording is what makes the contact form appear, so never skip it.
    → Bad examples (NEVER do these):
-     "Would you like me to connect you with Jack?" (asking permission)
+     "Would you like me to connect you with our sales team?" (asking permission)
      "Does that sound good to you?" (dead-end question)
-     "I'd be happy to connect you with Jack, who can provide more insights." (wordy, passive)
-   → A contact form will appear automatically when you mention connecting with Jack — do NOT ask the visitor to type their contact info in chat
+     "I'd be happy to connect you with our sales team, who can provide more insights." (wordy, passive)
+   → A contact form will appear automatically when you mention our sales team following up — do NOT ask the visitor to type their contact info in chat
    → You can also mention they can call +1-561-462-8333
-5. IMPORTANT: Do NOT ask "what features are you looking for?" or "what are you looking for?" — instead, SUGGEST features based on what they've told you. Show expertise, don't quiz people. 2-3 exchanges max before offering Jack.
+5. IMPORTANT: Do NOT ask "what features are you looking for?" or "what are you looking for?" — instead, SUGGEST features based on what they've told you. Show expertise, don't quiz people. 2-3 exchanges max before handing off to our sales team.
 6. NEVER ask the visitor to provide their email, phone, or contact details in chat. A form will appear automatically.
 7. If someone mentions website performance, SEO, or redesign, suggest the free website audit at /free-audit
 
@@ -49,11 +49,11 @@ WHAT YOU KNOW
 - Jack's background: 20+ years in product management and enterprise technology. He has led products in healthcare tech (EMR systems, AI-powered clinical tools), driven digital transformation and IoT initiatives, and managed enterprise relationships with Fortune 500 companies. He founded Ateed Tech to bring that enterprise-grade product thinking to businesses of every size.
 
 GUARDRAILS
-- Pricing: explain factors that affect cost (scope, complexity, integrations, timeline) but NEVER give specific dollar figures. Offer to connect with Jack for an accurate estimate.
+- Pricing: explain factors that affect cost (scope, complexity, integrations, timeline) but NEVER give specific dollar figures. Offer to connect them with our sales team for an accurate estimate.
 - Off-topic: briefly acknowledge with humor, then redirect. Example: "Ha! I'm better with software projects though — what are you working on?"
 - Competitors: never speak negatively. Focus on Ateed Tech's strengths.
 - Technical questions: light answers are fine (shows expertise) but don't become a free consulting service — guide toward a real conversation with the team.
-- Uncertainty: be honest. "I'm not sure about that — Jack's team would know better. Want me to connect you?"`;
+- Uncertainty: be honest. "I'm not sure about that — our sales team would know better. Drop your details below and they'll call you!"`;
 
 interface RateLimitEntry {
   count: number;
@@ -90,15 +90,18 @@ export async function POST(request: NextRequest) {
   if (!apiKey) {
     return NextResponse.json(
       { error: "Chat is currently unavailable. Please try again later." },
-      { status: 503 }
+      { status: 503 },
     );
   }
 
   const ip = getClientIP(request);
   if (!checkRateLimit(ip)) {
     return NextResponse.json(
-      { error: "Too many messages. Please wait a few minutes before trying again." },
-      { status: 429 }
+      {
+        error:
+          "Too many messages. Please wait a few minutes before trying again.",
+      },
+      { status: 429 },
     );
   }
 
@@ -106,12 +109,18 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body." },
+      { status: 400 },
+    );
   }
 
   const { messages } = body;
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return NextResponse.json({ error: "Messages are required." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Messages are required." },
+      { status: 400 },
+    );
   }
 
   try {
@@ -140,7 +149,7 @@ export async function POST(request: NextRequest) {
       console.error("OpenAI API error:", response.status, errorText);
       return NextResponse.json(
         { error: "Failed to get a response. Please try again." },
-        { status: 502 }
+        { status: 502 },
       );
     }
 
@@ -174,7 +183,9 @@ export async function POST(request: NextRequest) {
                   const text = parsed.choices?.[0]?.delta?.content;
                   if (text) {
                     controller.enqueue(
-                      new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`)
+                      new TextEncoder().encode(
+                        `data: ${JSON.stringify({ text })}\n\n`,
+                      ),
                     );
                   }
                 } catch {
@@ -202,7 +213,7 @@ export async function POST(request: NextRequest) {
     console.error("Chat API error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred. Please try again." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

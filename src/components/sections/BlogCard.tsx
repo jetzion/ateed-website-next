@@ -32,15 +32,20 @@ export function BlogCard({
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
         border: "1px solid rgba(59,141,214,0.08)",
-        boxShadow: "0 4px 24px rgba(30,80,160,0.06), 0 1px 3px rgba(0,0,0,0.03)",
+        boxShadow:
+          "0 4px 24px rgba(30,80,160,0.06), 0 1px 3px rgba(0,0,0,0.03)",
       }}
     >
       {imageUrl && (
-        <Link href={`/blog/${slug}`} className="relative h-52 block overflow-hidden">
+        <Link
+          href={`/blog/${slug}`}
+          className="relative h-52 block overflow-hidden"
+        >
           <Image
             src={imageUrl}
             alt={title}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
           {featured && (
@@ -78,6 +83,7 @@ export function BlogCard({
                   src={authorAvatar}
                   alt={authorName}
                   fill
+                  sizes="28px"
                   className="object-cover"
                 />
               </div>
@@ -87,9 +93,7 @@ export function BlogCard({
             </span>
           </div>
 
-          <time className="text-sm text-text-tertiary">
-            {publishDate}
-          </time>
+          <time className="text-sm text-text-tertiary">{publishDate}</time>
         </div>
       </div>
     </article>
