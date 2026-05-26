@@ -1,0 +1,24 @@
+# Timesheet — Ateed Tech Website
+
+**Project:** Ateed Tech Website (Next.js)
+**Developer:** Ajay
+**Period:** January 7 – March 15, 2026
+**Total Hours:** ~22 hours
+
+## Daily Breakdown
+
+| Date       | Hours | Tasks                                                        |
+| ---------- | ----- | ------------------------------------------------------------ |
+| Jan 7      | 1.5h  | Initial Next.js setup, Contentful CMS integration            |
+| Mar 4      | 11h   | Full website redesign, GSAP animations, Hero, Services, Industries, Case Studies, Tech Stack, About, Blog, Contact pages, navbar wordmark, favicon |
+| Mar 5      | 1h    | Contact page polish, footer fixes, background styling        |
+| Mar 12     | 0.5h  | Research and planning                                        |
+| Mar 13     | 0.5h  | Research and planning                                        |
+| Mar 14     | 4.25h | Free Website Audit feature, SEO enhancements, security headers, nav CTA buttons, Contentful null safety |
+| Mar 15     | 3.5h  | AI chatbot, contact form, mobile menu, button styling        |
+| **Total**  | **~22h** |                                                           |
+
+## Notes
+
+- Hours based on git commit timestamps and Claude Code session logs
+- Does not include time spent on design planning, Contentful CMS content setup, client communication, or deployment
