@@ -652,12 +652,17 @@ export function Hero({ data }: HeroProps) {
         </div>
       </div>
 
-      {/* Scroll cue — pulsing label + cascading chevrons that bob as a group */}
-      <div className="scroll-cue absolute bottom-8 left-1/2 z-10 flex flex-col items-center gap-2.5 text-accent">
-        <span className="scroll-cue-label text-xs font-medium uppercase tracking-[0.25em] text-text-secondary">
+      {/* Scroll cue — clickable: smooth-scrolls to the next section. Plain
+          anchor so it works without JS (html has scroll-behavior: smooth). */}
+      <a
+        href="#mission"
+        aria-label="Scroll to next section"
+        className="scroll-cue group absolute bottom-8 left-1/2 z-10 flex cursor-pointer flex-col items-center gap-2.5 rounded-lg p-2 text-accent transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      >
+        <span className="scroll-cue-label text-xs font-medium uppercase tracking-[0.25em] text-text-secondary transition-colors group-hover:text-text-primary">
           Scroll
         </span>
-        <div className="scroll-chev-group flex flex-col items-center g">
+        <div className="scroll-chev-group flex flex-col items-center gap-[3px]">
           {[0, 1].map((i) => (
             <svg
               key={i}
@@ -676,7 +681,7 @@ export function Hero({ data }: HeroProps) {
             </svg>
           ))}
         </div>
-      </div>
+      </a>
     </section>
   );
 }

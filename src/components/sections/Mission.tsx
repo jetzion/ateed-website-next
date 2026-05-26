@@ -71,7 +71,8 @@ export function Mission({ data }: MissionProps) {
   return (
     <section
       ref={sectionRef}
-      className="relative py-28 lg:py-36 bg-bg-primary overflow-x-clip"
+      id="mission"
+      className="relative py-28 lg:py-36 bg-bg-primary overflow-x-clip scroll-mt-24"
     >
       {/* Blue background that grows outward */}
       <div
