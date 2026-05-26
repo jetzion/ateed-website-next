@@ -38,10 +38,10 @@ export async function generateMetadata({
 
   const postData = post as unknown as BlogPost;
   const imageUrl = postData.fields.heroImage?.fields?.file?.url;
+  // Social-card image: normalize protocol and cap size via Contentful (keep
+  // JPEG — webp OG images don't render on every platform).
   const ogImage = imageUrl
-    ? imageUrl.startsWith("//")
-      ? `https:${imageUrl}`
-      : imageUrl
+    ? `${imageUrl.startsWith("//") ? `https:${imageUrl}` : imageUrl}?w=1200&q=80`
     : undefined;
 
   return {
@@ -105,9 +105,13 @@ const richTextOptions: Options = {
       const { title, description, file } = target?.fields || {};
       const imageUrl = file?.url;
       if (!imageUrl) return "";
-      const fullUrl = imageUrl.startsWith("//")
+      const normalized = imageUrl.startsWith("//")
         ? `https:${imageUrl}`
         : imageUrl;
+      // Cap in-body images via Contentful so posts don't ship multi-MB originals.
+      const fullUrl = normalized.includes("images.ctfassets.net")
+        ? `${normalized}${normalized.includes("?") ? "&" : "?"}fm=webp&w=1600&q=80`
+        : normalized;
       return `
         <figure class="my-8">
           <img src="${fullUrl}" alt="${description || title || "Blog image"}" class="rounded-lg w-full" />
@@ -132,9 +136,16 @@ function formatDate(dateString: string) {
   return date.toLocaleDateString("en-US", options);
 }
 
-function getImageUrl(url?: string) {
+function getImageUrl(url?: string, width?: number) {
   if (!url) return undefined;
-  return url.startsWith("//") ? `https:${url}` : url;
+  const normalized = url.startsWith("//") ? `https:${url}` : url;
+  // Pre-resize Contentful assets so the Next.js image optimizer isn't handed
+  // multi-MB originals (which crash it with HTTP 502).
+  if (width && normalized.includes("images.ctfassets.net")) {
+    const sep = normalized.includes("?") ? "&" : "?";
+    return `${normalized}${sep}fm=webp&w=${width}&q=80`;
+  }
+  return normalized;
 }
 
 function getSlug(title: string) {
@@ -168,10 +179,14 @@ export default async function BlogPostPage({
   const authorTitle = author?.fields?.jobTitle || "Author";
   const authorAvatar = getImageUrl(
     author?.fields?.profilePicture?.fields?.file?.url,
+    128,
   );
   const linkedInLink = author?.fields?.linkedInLink;
 
-  const heroImageUrl = getImageUrl(post.fields.heroImage?.fields?.file?.url);
+  const heroImageUrl = getImageUrl(
+    post.fields.heroImage?.fields?.file?.url,
+    1600,
+  );
   const publishDate = formatDate(post.fields.publishDate || post.sys.createdAt);
 
   // Render rich text content

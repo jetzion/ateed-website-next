@@ -36,9 +36,17 @@ function getSlug(title: string) {
   return encodeURIComponent(title.trim().toLowerCase().replace(/\s+/g, "-"));
 }
 
-function getImageUrl(url?: string) {
+function getImageUrl(url?: string, width?: number) {
   if (!url) return undefined;
-  return url.startsWith("//") ? `https:${url}` : url;
+  const normalized = url.startsWith("//") ? `https:${url}` : url;
+  // Pre-resize Contentful assets via their Image API. Originals can be huge
+  // (e.g. 5000px / 5MB) and crash the Next.js image optimizer (HTTP 502);
+  // a CDN-resized webp keeps the source small so optimization succeeds.
+  if (width && normalized.includes("images.ctfassets.net")) {
+    const sep = normalized.includes("?") ? "&" : "?";
+    return `${normalized}${sep}fm=webp&w=${width}&q=80`;
+  }
+  return normalized;
 }
 
 export default async function BlogPage() {
@@ -51,7 +59,9 @@ export default async function BlogPage() {
     | ContentfulEntry<BlogHeroFields>
     | undefined;
   const heroImageUrl = hero?.fields?.heroImage?.fields?.file?.url;
-  const backgroundImage = heroImageUrl ? getImageUrl(heroImageUrl) : undefined;
+  const backgroundImage = heroImageUrl
+    ? getImageUrl(heroImageUrl, 2000)
+    : undefined;
 
   const posts = blogResponse.items as unknown as BlogPost[];
   const includes = blogResponse.includes;
@@ -98,9 +108,11 @@ export default async function BlogPage() {
                 const authorName = author?.fields?.name || "Anonymous";
                 const authorAvatar = getImageUrl(
                   author?.fields?.profilePicture?.fields?.file?.url,
+                  128,
                 );
                 const imageUrl = getImageUrl(
                   featuredPost.fields.heroImage?.fields?.file?.url,
+                  1600,
                 );
                 const publishDate = formatDate(
                   featuredPost.fields.publishDate || featuredPost.sys.createdAt,
@@ -139,9 +151,11 @@ export default async function BlogPage() {
                 const authorName = author?.fields?.name || "Anonymous";
                 const authorAvatar = getImageUrl(
                   author?.fields?.profilePicture?.fields?.file?.url,
+                  128,
                 );
                 const imageUrl = getImageUrl(
                   post.fields.heroImage?.fields?.file?.url,
+                  800,
                 );
                 const publishDate = formatDate(
                   post.fields.publishDate || post.sys.createdAt,
