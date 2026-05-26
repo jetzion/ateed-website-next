@@ -46,6 +46,9 @@ export function BlogCard({
             alt={title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            // Already resized by Contentful's CDN — skip the Next optimizer
+            // Lambda (avoids concurrency throttling on image-heavy pages).
+            unoptimized
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
           {featured && (
@@ -84,6 +87,7 @@ export function BlogCard({
                   alt={authorName}
                   fill
                   sizes="28px"
+                  unoptimized
                   className="object-cover"
                 />
               </div>

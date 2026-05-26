@@ -69,6 +69,9 @@ export function FeaturedPost({
               alt={title}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
+              // Already resized by Contentful's CDN — skip the Next optimizer
+              // Lambda (avoids concurrency throttling on image-heavy pages).
+              unoptimized
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
           </Link>
@@ -102,6 +105,7 @@ export function FeaturedPost({
                     alt={authorName}
                     fill
                     sizes="40px"
+                    unoptimized
                     className="object-cover"
                   />
                 </div>
