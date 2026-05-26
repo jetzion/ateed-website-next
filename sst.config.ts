@@ -29,6 +29,13 @@ export default $config({
       "AuditNotificationEmail",
       "sales@ateedtech.com",
     );
+    // Shared secret for the Contentful on-demand revalidation webhook. Empty
+    // default keeps deploys working until it's set:
+    //   sst secret set ContentfulRevalidateSecret <value> --stage production
+    const contentfulRevalidateSecret = new sst.Secret(
+      "ContentfulRevalidateSecret",
+      "",
+    );
 
     const isProd = $app.stage === "production";
     const isStaging = $app.stage === "staging";
@@ -62,6 +69,7 @@ export default $config({
         IMAGE_GEN_SECRET: imageGenSecret.value,
         GOOGLE_AI_API_KEY: googleAiApiKey.value,
         AUDIT_NOTIFICATION_EMAIL: auditNotificationEmail.value,
+        CONTENTFUL_REVALIDATE_SECRET: contentfulRevalidateSecret.value,
         NEXT_PUBLIC_SITE_URL: siteUrl,
       },
     });
