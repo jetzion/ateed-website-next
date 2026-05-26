@@ -139,8 +139,19 @@ main {
 
 .word-reveal > span > span {
   display: inline-block;
-  transform: translateY(100%);
   will-change: transform;
+}
+
+/* Progressive enhancement: only hide words (for GSAP to reveal) when JS is
+   active. Without JS the headline renders in place — never invisible. */
+.js .word-reveal > span > span {
+  transform: translateY(100%);
+}
+
+/* Flash prevention: GSAP-animated FadeIn elements start hidden only under JS,
+   so there's no visible-then-hidden blink on hydration. No JS = always visible. */
+.js .js-fade {
+  opacity: 0;
 }
 
 /* Scrollbar styling */
@@ -180,20 +191,87 @@ main {
   mix-blend-mode: multiply;
 }
 
-/* Hero scroll indicator animation */
-.hero-scroll-line {
-  animation: scrollPulse 2s ease-in-out infinite;
+/* Hero scroll cue — entrance (CSS-driven so it survives without GSAP) */
+.scroll-cue {
+  animation: scrollCueIn 0.8s ease-out 0.6s both;
 }
 
-@keyframes scrollPulse {
-  0%, 100% {
-    opacity: 0.4;
-    transform: scaleY(1);
+@keyframes scrollCueIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Scroll cue: a brightness wave flows label → chevron 1 → chevron 2. The
+   chevron pair bobs together as a GROUP, so the two arrows keep a constant gap
+   (no crowding). Label + chevron brightness are opacity-only (reduced-motion
+   safe); only the group bob is spatial. */
+.scroll-cue-label {
+  animation: scrollLabelPulse 1.6s ease-in-out infinite;
+}
+
+.scroll-chev-group {
+  animation: scrollChevBob 1.6s ease-in-out infinite;
+}
+
+.scroll-chev {
+  opacity: 0.25;
+  animation: scrollChevFade 1.6s ease-in-out infinite;
+}
+
+.scroll-chev-1 {
+  animation-delay: 0.16s;
+}
+
+.scroll-chev-2 {
+  animation-delay: 0.32s;
+}
+
+@keyframes scrollLabelPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  45% {
+    opacity: 1;
+  }
+}
+
+@keyframes scrollChevFade {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  45% {
+    opacity: 1;
+  }
+}
+
+@keyframes scrollChevBob {
+  0%,
+  100% {
+    transform: translateY(-2px);
   }
   50% {
-    opacity: 0.8;
-    transform: scaleY(1.2);
-    transform-origin: top;
+    transform: translateY(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue {
+    animation: none;
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  /* Drop the spatial bob; the label + chevron opacity cascade still runs. */
+  .scroll-chev-group {
+    animation: none;
+    transform: none;
   }
 }
 

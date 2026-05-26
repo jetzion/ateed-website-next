@@ -25,7 +25,6 @@ export function Hero({ data }: HeroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const artRef = useRef<HTMLDivElement>(null);
   const cardsContainerRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Mouse parallax for floating cards
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -135,15 +134,6 @@ export function Hero({ data }: HeroProps) {
           },
         });
       });
-    }
-
-    // Scroll indicator
-    if (scrollRef.current) {
-      gsap.fromTo(
-        scrollRef.current,
-        { opacity: 0, y: -10 },
-        { opacity: 1, y: 0, duration: 0.8, delay: 1.2, ease: "power2.out" },
-      );
     }
   }, []);
 
@@ -662,15 +652,30 @@ export function Hero({ data }: HeroProps) {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div
-        ref={scrollRef}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10 opacity-0"
-      >
-        <span className="text-[10px] text-text-tertiary tracking-[0.25em] uppercase">
+      {/* Scroll cue — pulsing label + cascading chevrons that bob as a group */}
+      <div className="scroll-cue absolute bottom-8 left-1/2 z-10 flex flex-col items-center gap-2.5 text-accent">
+        <span className="scroll-cue-label text-xs font-medium uppercase tracking-[0.25em] text-text-secondary">
           Scroll
         </span>
-        <div className="w-px h-8 bg-gradient-to-b from-accent/40 to-transparent hero-scroll-line" />
+        <div className="scroll-chev-group flex flex-col items-center g">
+          {[0, 1].map((i) => (
+            <svg
+              key={i}
+              className={`scroll-chev ${i === 0 ? "scroll-chev-1" : "scroll-chev-2"}`}
+              width="20"
+              height="10"
+              viewBox="0 0 20 10"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M2 2l8 6 8-6" />
+            </svg>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -72,12 +72,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
+        {/* Set a `js` class before first paint so CSS can hide GSAP-animated
+            elements only when JS is present — no FOUC, no flash, and content
+            stays visible if JS never loads. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.add('js')",
+          }}
+        />
         <link rel="preconnect" href="https://images.ctfassets.net" />
         <link rel="dns-prefetch" href="https://images.ctfassets.net" />
       </head>
-      <body className={`${inter.variable} ${newsreader.variable} font-sans antialiased bg-bg-primary text-text-primary`}>
+      <body
+        className={`${inter.variable} ${newsreader.variable} font-sans antialiased bg-bg-primary text-text-primary`}
+      >
         <Navbar />
         <main>{children}</main>
         <Footer />

@@ -33,8 +33,10 @@ export function FadeIn({
 
   const Tag = Component as React.ElementType;
 
+  // `js-fade` lets CSS hide this only when JS is active (see globals.css),
+  // killing the hydration flash while keeping content visible without JS.
   return (
-    <Tag ref={ref} className={className}>
+    <Tag ref={ref} className={`js-fade ${className}`.trim()}>
       {children}
     </Tag>
   );
