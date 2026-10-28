@@ -3,39 +3,6 @@ import { formatPSIResults, checkSecurityHeaders } from "@/lib/audit";
 import type { AuditRequest } from "@/lib/audit";
 import { sendAuditNotification } from "@/lib/email";
 
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const MAX_AUDITS_PER_WINDOW = 5;
-
-interface RateLimitEntry {
-  count: number;
-  resetAt: number;
-}
-
-const rateLimitMap = new Map<string, RateLimitEntry>();
-
-function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
-  return request.headers.get("x-real-ip") ?? "unknown";
-}
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-
-  if (entry.count >= MAX_AUDITS_PER_WINDOW) {
-    return false;
-  }
-
-  entry.count++;
-  return true;
-}
-
 function isValidUrl(str: string): boolean {
   try {
     const url = new URL(str);
@@ -50,15 +17,6 @@ function isValidEmail(email: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  // Rate limit
-  const ip = getClientIP(request);
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json(
-      { error: "Too many audit requests. Please try again in an hour." },
-      { status: 429 },
-    );
-  }
-
   // Parse body
   let body: AuditRequest;
   try {

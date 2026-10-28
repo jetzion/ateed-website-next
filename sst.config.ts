@@ -62,25 +62,36 @@ export default $config({
     // CDN edge cache immediately instead of waiting out the 1h s-maxage TTL.
     const prodDistributionId = "E3KDAMVKB2YACU";
 
+    const webAcl = isProd || isStaging ? createApiRateLimitAcl() : undefined;
+
     new sst.aws.Nextjs("AteedWeb", {
       domain,
-      // Let the server function invalidate the production distribution.
-      transform: isProd
-        ? {
-            server: (args) => {
-              // SST grants the server's own access via resource links, so this
-              // field is unset by default — assigning here adds our policy.
-              args.permissions = [
-                {
-                  actions: ["cloudfront:CreateInvalidation"],
-                  resources: [
-                    `arn:aws:cloudfront::367826605341:distribution/${prodDistributionId}`,
-                  ],
-                },
-              ];
+      transform: {
+        // Attach the rate-limit WAF to the site's CloudFront distribution.
+        cdn: (args) => {
+          if (!webAcl) return;
+          args.transform = {
+            ...args.transform,
+            distribution: (dist) => {
+              dist.webAclId = webAcl.arn;
             },
-          }
-        : undefined,
+          };
+        },
+        // Let the server function invalidate the production distribution.
+        server: (args) => {
+          if (!isProd) return;
+          // SST grants the server's own access via resource links, so this
+          // field is unset by default — assigning here adds our policy.
+          args.permissions = [
+            {
+              actions: ["cloudfront:CreateInvalidation"],
+              resources: [
+                `arn:aws:cloudfront::367826605341:distribution/${prodDistributionId}`,
+              ],
+            },
+          ];
+        },
+      },
       environment: {
         CONTENTFUL_SPACE_ID: contentfulSpaceId.value,
         CONTENTFUL_ACCESS_TOKEN: contentfulAccessToken.value,
@@ -98,3 +109,70 @@ export default $config({
     });
   },
 });
+
+/** Per-IP limits on the public API routes, keyed on CloudFront's viewer IP. */
+const API_RATE_LIMITS = [
+  { name: "chat", path: "/api/chat", limit: 20 },
+  { name: "contact", path: "/api/contact", limit: 10 },
+  { name: "audit", path: "/api/audit", limit: 10 },
+];
+
+/**
+ * WAF web ACL that returns 429 when one IP exceeds a route's limit within
+ * 10 minutes. CloudFront-scoped ACLs must live in us-east-1.
+ */
+function createApiRateLimitAcl() {
+  const usEast1 = new aws.Provider("UsEast1", { region: "us-east-1" });
+  const visibility = (metricName: string) => ({
+    cloudwatchMetricsEnabled: true,
+    metricName,
+    sampledRequestsEnabled: true,
+  });
+
+  return new aws.wafv2.WebAcl(
+    "ApiRateLimit",
+    {
+      scope: "CLOUDFRONT",
+      defaultAction: { allow: {} },
+      visibilityConfig: visibility(`${$app.stage}-api-rate-limit`),
+      customResponseBodies: [
+        {
+          key: "tooManyRequests",
+          contentType: "APPLICATION_JSON",
+          content: JSON.stringify({
+            error: "Too many requests. Please wait a few minutes and try again.",
+          }),
+        },
+      ],
+      rules: API_RATE_LIMITS.map(({ name, path, limit }, priority) => ({
+        name: `rate-limit-${name}`,
+        priority,
+        action: {
+          block: {
+            customResponse: {
+              responseCode: 429,
+              customResponseBodyKey: "tooManyRequests",
+            },
+          },
+        },
+        statement: {
+          rateBasedStatement: {
+            limit,
+            evaluationWindowSec: 600,
+            aggregateKeyType: "IP",
+            scopeDownStatement: {
+              byteMatchStatement: {
+                searchString: path,
+                positionalConstraint: "STARTS_WITH",
+                fieldToMatch: { uriPath: {} },
+                textTransformations: [{ priority: 0, type: "LOWERCASE" }],
+              },
+            },
+          },
+        },
+        visibilityConfig: visibility(`${$app.stage}-rate-limit-${name}`),
+      })),
+    },
+    { provider: usEast1 },
+  );
+}

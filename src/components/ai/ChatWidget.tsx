@@ -411,6 +411,7 @@ export function ChatWidget() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type a message..."
+                  maxLength={2000}
                   disabled={isStreaming}
                   className="flex-1 rounded-full border border-border bg-white px-4 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none disabled:opacity-50"
                   aria-label="Chat message input"
