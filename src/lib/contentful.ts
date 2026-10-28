@@ -39,9 +39,10 @@ export async function getHeroSection(page: string = "Home") {
   return response.items;
 }
 
+// Sorted by the editor-set "Order" field (lowest first); creation date breaks ties.
 export async function getServices() {
   const response = await getEntries("ourServices", {
-    order: ["sys.createdAt"],
+    order: ["fields.order", "sys.createdAt"],
     include: 2,
   });
   return response.items;
