@@ -57,6 +57,7 @@ export interface ServiceFields {
   title?: string;
   description?: string;
   icon?: ContentfulAsset;
+  order?: number;
 }
 
 export type BlogPost = ContentfulEntry<BlogPostFields>;
