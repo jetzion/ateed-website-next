@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendChatContactNotification } from "@/lib/email";
+import { getClientIP, isWithinRateLimit } from "@/lib/rateLimit";
 
 export async function POST(request: NextRequest) {
+  if (!(await isWithinRateLimit("contact", getClientIP(request), 5, 600))) {
+    return NextResponse.json(
+      { error: "Too many submissions. Please try again in a few minutes." },
+      { status: 429 }
+    );
+  }
+
   let body: {
     name?: string;
     email?: string;
@@ -25,6 +33,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (
+    name.length > 80 ||
+    email.length > 254 ||
+    phone.length > 30 ||
+    (note?.length ?? 0) > 1000
+  ) {
+    return NextResponse.json(
+      { error: "One or more fields are too long." },
+      { status: 400 }
+    );
+  }
+
   // Basic email format check
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json(
@@ -33,7 +53,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const conversationContext = conversation ?? [];
+  const conversationContext = (conversation ?? []).slice(-100);
 
   // Send email notification (includes full chat + contact info)
   try {

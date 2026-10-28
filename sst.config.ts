@@ -62,25 +62,52 @@ export default $config({
     // CDN edge cache immediately instead of waiting out the 1h s-maxage TTL.
     const prodDistributionId = "E3KDAMVKB2YACU";
 
+    // Per-IP request counters for the public API routes (src/lib/rateLimit.ts).
+    // Fixed provisioned capacity stays inside DynamoDB's always-free tier;
+    // throttling under a flood is treated as "rate limited". The name is fixed
+    // (not linked) so previews can resolve the server's environment.
+    const rateLimitTable = `${$app.name}-${$app.stage}-rate-limits`;
+    new sst.aws.Dynamo("RateLimits", {
+      fields: { pk: "string" },
+      primaryIndex: { hashKey: "pk" },
+      ttl: "expiresAt",
+      transform: {
+        table: {
+          name: rateLimitTable,
+          billingMode: "PROVISIONED",
+          readCapacity: 1,
+          writeCapacity: 5,
+        },
+      },
+    });
+
     new sst.aws.Nextjs("AteedWeb", {
       domain,
-      // Let the server function invalidate the production distribution.
-      transform: isProd
-        ? {
-            server: (args) => {
-              // SST grants the server's own access via resource links, so this
-              // field is unset by default — assigning here adds our policy.
-              args.permissions = [
-                {
-                  actions: ["cloudfront:CreateInvalidation"],
-                  resources: [
-                    `arn:aws:cloudfront::367826605341:distribution/${prodDistributionId}`,
-                  ],
-                },
-              ];
+      transform: {
+        server: (args) => {
+          // SST grants the server's own access via resource links, so this
+          // field is unset by default — assigning here adds our policies.
+          args.permissions = [
+            {
+              actions: ["dynamodb:UpdateItem"],
+              resources: [
+                `arn:aws:dynamodb:us-east-2:367826605341:table/${rateLimitTable}`,
+              ],
             },
-          }
-        : undefined,
+            // Let the server function invalidate the production distribution.
+            ...(isProd
+              ? [
+                  {
+                    actions: ["cloudfront:CreateInvalidation"],
+                    resources: [
+                      `arn:aws:cloudfront::367826605341:distribution/${prodDistributionId}`,
+                    ],
+                  },
+                ]
+              : []),
+          ];
+        },
+      },
       environment: {
         CONTENTFUL_SPACE_ID: contentfulSpaceId.value,
         CONTENTFUL_ACCESS_TOKEN: contentfulAccessToken.value,
@@ -93,6 +120,7 @@ export default $config({
         AUDIT_NOTIFICATION_EMAIL: auditNotificationEmail.value,
         CONTENTFUL_REVALIDATE_SECRET: contentfulRevalidateSecret.value,
         NEXT_PUBLIC_SITE_URL: siteUrl,
+        RATE_LIMIT_TABLE: rateLimitTable,
         ...(isProd ? { CLOUDFRONT_DISTRIBUTION_ID: prodDistributionId } : {}),
       },
     });

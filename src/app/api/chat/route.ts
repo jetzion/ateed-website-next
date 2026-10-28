@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getClientIP, isWithinRateLimit } from "@/lib/rateLimit";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const MODEL = "gpt-4o-mini";
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
-const MAX_MESSAGES_PER_WINDOW = 20;
+const MAX_HISTORY_MESSAGES = 20;
+const MAX_MESSAGE_LENGTH = 2000;
 
 const SYSTEM_PROMPT = `IDENTITY
 You are the AI assistant for Ateed Tech, a custom software development company based in Boynton Beach, Florida, founded and led by CEO Jack Etzion. Your job is to warmly greet visitors, understand what they need, and gather enough context so our sales team can follow up with an informed call.
@@ -55,36 +56,6 @@ GUARDRAILS
 - Technical questions: light answers are fine (shows expertise) but don't become a free consulting service — guide toward a real conversation with the team.
 - Uncertainty: be honest. "I'm not sure about that — our sales team would know better. Drop your details below and they'll call you!"`;
 
-interface RateLimitEntry {
-  count: number;
-  resetAt: number;
-}
-
-const rateLimitMap = new Map<string, RateLimitEntry>();
-
-function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
-  return request.headers.get("x-real-ip") ?? "unknown";
-}
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-
-  if (entry.count >= MAX_MESSAGES_PER_WINDOW) {
-    return false;
-  }
-
-  entry.count++;
-  return true;
-}
-
 export async function POST(request: NextRequest) {
   const apiKey = process.env.OPENAI_API_KEY_TEST;
   if (!apiKey) {
@@ -94,8 +65,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const ip = getClientIP(request);
-  if (!checkRateLimit(ip)) {
+  if (!(await isWithinRateLimit("chat", getClientIP(request), 20, 600))) {
     return NextResponse.json(
       {
         error:
@@ -123,6 +93,21 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (
+    messages.some(
+      (m) =>
+        typeof m.content !== "string" || m.content.length > MAX_MESSAGE_LENGTH,
+    )
+  ) {
+    return NextResponse.json(
+      { error: "Each message must be text under 2000 characters." },
+      { status: 400 },
+    );
+  }
+
+  // Bound OpenAI cost per request: only the recent history is sent.
+  const recentMessages = messages.slice(-MAX_HISTORY_MESSAGES);
+
   try {
     const response = await fetch(OPENAI_API_URL, {
       method: "POST",
@@ -136,7 +121,7 @@ export async function POST(request: NextRequest) {
         stream: true,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          ...messages.map((m) => ({
+          ...recentMessages.map((m) => ({
             role: m.role === "user" ? "user" : "assistant",
             content: m.content,
           })),

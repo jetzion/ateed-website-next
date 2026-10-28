@@ -1,40 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { formatPSIResults, checkSecurityHeaders } from "@/lib/audit";
 import type { AuditRequest } from "@/lib/audit";
-import { sendAuditNotification, sendAuditResultsToUser } from "@/lib/email";
-
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const MAX_AUDITS_PER_WINDOW = 5;
-
-interface RateLimitEntry {
-  count: number;
-  resetAt: number;
-}
-
-const rateLimitMap = new Map<string, RateLimitEntry>();
-
-function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
-  return request.headers.get("x-real-ip") ?? "unknown";
-}
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-
-  if (entry.count >= MAX_AUDITS_PER_WINDOW) {
-    return false;
-  }
-
-  entry.count++;
-  return true;
-}
+import { sendAuditNotification } from "@/lib/email";
+import { getClientIP, isWithinRateLimit } from "@/lib/rateLimit";
 
 function isValidUrl(str: string): boolean {
   try {
@@ -50,9 +18,7 @@ function isValidEmail(email: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  // Rate limit
-  const ip = getClientIP(request);
-  if (!checkRateLimit(ip)) {
+  if (!(await isWithinRateLimit("audit", getClientIP(request), 5, 3600))) {
     return NextResponse.json(
       { error: "Too many audit requests. Please try again in an hour." },
       { status: 429 },
@@ -80,6 +46,19 @@ export async function POST(request: NextRequest) {
   if (!url || !name || !email) {
     return NextResponse.json(
       { error: "URL, name, and email are required." },
+      { status: 400 },
+    );
+  }
+
+  if (
+    url.length > 500 ||
+    name.length > 80 ||
+    email.length > 254 ||
+    (phone?.length ?? 0) > 30 ||
+    (company?.length ?? 0) > 100
+  ) {
+    return NextResponse.json(
+      { error: "One or more fields are too long." },
       { status: 400 },
     );
   }
@@ -172,13 +151,10 @@ export async function POST(request: NextRequest) {
     // Format results
     const results = formatPSIResults(psiData, securityHeaders);
 
-    // Fire-and-forget: send email notifications (team + user) in parallel
+    // Fire-and-forget: notify the sales team
     const contact = { url: normalizedUrl, name, email, phone, company };
     sendAuditNotification(contact, results).catch((err) =>
       console.error("Failed to send team audit email:", err),
-    );
-    sendAuditResultsToUser(contact, results).catch((err) =>
-      console.error("Failed to send user audit email:", err),
     );
 
     return NextResponse.json(results);
