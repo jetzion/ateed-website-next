@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ateed Tech Website
 
-## Getting Started
+Marketing site for [ateedtech.com](https://www.ateedtech.com). Next.js 16 (App
+Router), Tailwind CSS, GSAP, content from Contentful. Deployed to AWS
+(CloudFront + Lambda) with SST.
 
-First, run the development server:
+## Run locally
+
+Create `.env` (or `.env.local`) in the project root:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+CONTENTFUL_SPACE_ID=750wikp5ao9z
+CONTENTFUL_ACCESS_TOKEN=<Content Delivery API token>
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Optional keys (chat, audit, email) are described in
+[scripts/SETUP_KEYS.md](scripts/SETUP_KEYS.md). Leave `RESEND_API_KEY` unset
+locally so test forms don't email the sales inbox. Rate limiting is off locally.
 
-## Learn More
+## Deploy
 
-To learn more about Next.js, take a look at the following resources:
+Deploy from `main` with AWS credentials that can deploy:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx sst deploy --stage production
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Secrets live in SST (`npx sst secret list --stage production`).
 
-## Deploy on Vercel
+## Editing content
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+All page content is in Contentful (space `750wikp5ao9z`, environment `master`).
+Published changes go live within an hour, or immediately if the revalidation
+webhook (`/api/revalidate`) is configured.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Service order:** each "Our Services" entry has an **Order** number; lowest
+  shows first.

@@ -6,18 +6,34 @@ This project uses several external APIs. Below are step-by-step instructions for
 
 ## Environment Variables
 
-Create a `.env.local` file in the project root with the following variables:
+For local development, create `.env` or `.env.local` in the project root (both
+are gitignored). Only the Contentful keys are required:
 
 ```env
-OPENAI_API_KEY=sk-proj-...
+CONTENTFUL_SPACE_ID=750wikp5ao9z
+CONTENTFUL_ACCESS_TOKEN=...
+OPENAI_API_KEY_TEST=sk-proj-...
 GOOGLE_PSI_API_KEY=AIza...
 RESEND_API_KEY=re_...
 AUDIT_NOTIFICATION_EMAIL=sales@ateedtech.com
 ```
 
+In production these come from SST secrets, not env files:
+`npx sst secret set <Name> <value> --stage production` (names are in
+`sst.config.ts`).
+
 ---
 
-## 1. `OPENAI_API_KEY` — AI Chatbot
+## 0. `CONTENTFUL_SPACE_ID` / `CONTENTFUL_ACCESS_TOKEN` — Content (required)
+
+1. Go to [app.contentful.com](https://app.contentful.com/) and open the space
+   whose URL contains `/spaces/750wikp5ao9z`
+2. **Settings → API keys** → open a key (or **Add API key**)
+3. Copy the **Content Delivery API – access token** (not the Preview token)
+
+---
+
+## 1. `OPENAI_API_KEY_TEST` — AI Chatbot
 
 Used by the AI chat widget (`/api/chat`).
 
@@ -50,7 +66,9 @@ Used by the Free Website Audit feature (`/api/audit`). Optional but strongly rec
 
 ## 3. `RESEND_API_KEY` — Email Notifications
 
-Used to send audit result emails to the team and to users.
+Used to send lead notifications (audits and chat contacts) to the sales inbox.
+Visitors are never emailed. Leave this unset locally: without it, emails are
+skipped with a console warning instead of reaching the real inbox.
 
 1. Go to [resend.com](https://resend.com/) and create an account
 2. Navigate to **API Keys** in the sidebar
@@ -90,4 +108,5 @@ curl -X POST http://localhost:3000/api/audit \
   -d '{"url":"https://example.com","name":"Test","email":"test@test.com"}'
 ```
 
-You should receive a JSON response with audit scores within 15-30 seconds.
+You should receive a JSON response with audit scores within 15-30 seconds. If
+`RESEND_API_KEY` is set, this also emails the sales inbox.
