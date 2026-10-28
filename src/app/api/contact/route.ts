@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendChatContactNotification } from "@/lib/email";
+import { getClientIP, isWithinRateLimit } from "@/lib/rateLimit";
 
 export async function POST(request: NextRequest) {
+  if (!(await isWithinRateLimit("contact", getClientIP(request), 5, 600))) {
+    return NextResponse.json(
+      { error: "Too many submissions. Please try again in a few minutes." },
+      { status: 429 }
+    );
+  }
+
   let body: {
     name?: string;
     email?: string;

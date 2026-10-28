@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getClientIP, isWithinRateLimit } from "@/lib/rateLimit";
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const MODEL = "gpt-4o-mini";
@@ -61,6 +62,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Chat is currently unavailable. Please try again later." },
       { status: 503 },
+    );
+  }
+
+  if (!(await isWithinRateLimit("chat", getClientIP(request), 20, 600))) {
+    return NextResponse.json(
+      {
+        error:
+          "Too many messages. Please wait a few minutes before trying again.",
+      },
+      { status: 429 },
     );
   }
 

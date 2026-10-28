@@ -62,34 +62,49 @@ export default $config({
     // CDN edge cache immediately instead of waiting out the 1h s-maxage TTL.
     const prodDistributionId = "E3KDAMVKB2YACU";
 
-    // Production only: its CloudFront Free flat-rate plan covers WAF costs.
-    const webAcl = isProd ? createApiRateLimitAcl() : undefined;
+    // Per-IP request counters for the public API routes (src/lib/rateLimit.ts).
+    // Fixed provisioned capacity stays inside DynamoDB's always-free tier;
+    // throttling under a flood is treated as "rate limited". The name is fixed
+    // (not linked) so previews can resolve the server's environment.
+    const rateLimitTable = `${$app.name}-${$app.stage}-rate-limits`;
+    new sst.aws.Dynamo("RateLimits", {
+      fields: { pk: "string" },
+      primaryIndex: { hashKey: "pk" },
+      ttl: "expiresAt",
+      transform: {
+        table: {
+          name: rateLimitTable,
+          billingMode: "PROVISIONED",
+          readCapacity: 1,
+          writeCapacity: 5,
+        },
+      },
+    });
 
     new sst.aws.Nextjs("AteedWeb", {
       domain,
       transform: {
-        // Attach the rate-limit WAF to the site's CloudFront distribution.
-        cdn: (args) => {
-          if (!webAcl) return;
-          args.transform = {
-            ...args.transform,
-            distribution: (dist) => {
-              dist.webAclId = webAcl.arn;
-            },
-          };
-        },
-        // Let the server function invalidate the production distribution.
         server: (args) => {
-          if (!isProd) return;
           // SST grants the server's own access via resource links, so this
-          // field is unset by default — assigning here adds our policy.
+          // field is unset by default — assigning here adds our policies.
           args.permissions = [
             {
-              actions: ["cloudfront:CreateInvalidation"],
+              actions: ["dynamodb:UpdateItem"],
               resources: [
-                `arn:aws:cloudfront::367826605341:distribution/${prodDistributionId}`,
+                `arn:aws:dynamodb:us-east-2:367826605341:table/${rateLimitTable}`,
               ],
             },
+            // Let the server function invalidate the production distribution.
+            ...(isProd
+              ? [
+                  {
+                    actions: ["cloudfront:CreateInvalidation"],
+                    resources: [
+                      `arn:aws:cloudfront::367826605341:distribution/${prodDistributionId}`,
+                    ],
+                  },
+                ]
+              : []),
           ];
         },
       },
@@ -105,75 +120,9 @@ export default $config({
         AUDIT_NOTIFICATION_EMAIL: auditNotificationEmail.value,
         CONTENTFUL_REVALIDATE_SECRET: contentfulRevalidateSecret.value,
         NEXT_PUBLIC_SITE_URL: siteUrl,
+        RATE_LIMIT_TABLE: rateLimitTable,
         ...(isProd ? { CLOUDFRONT_DISTRIBUTION_ID: prodDistributionId } : {}),
       },
     });
   },
 });
-
-/** Per-IP limits on the public API routes, keyed on CloudFront's viewer IP. */
-const API_RATE_LIMITS = [
-  { name: "chat", path: "/api/chat", limit: 10 },
-  { name: "contact", path: "/api/contact", limit: 10 },
-  { name: "audit", path: "/api/audit", limit: 10 },
-];
-
-/**
- * WAF web ACL that returns 429 when one IP exceeds a route's limit within
- * 5 minutes. CloudFront-scoped ACLs must live in us-east-1.
- */
-function createApiRateLimitAcl() {
-  const usEast1 = new aws.Provider("UsEast1", { region: "us-east-1" });
-  const visibility = (metricName: string) => ({
-    cloudwatchMetricsEnabled: true,
-    metricName,
-    sampledRequestsEnabled: true,
-  });
-
-  return new aws.wafv2.WebAcl(
-    "ApiRateLimit",
-    {
-      scope: "CLOUDFRONT",
-      defaultAction: { allow: {} },
-      visibilityConfig: visibility(`${$app.stage}-api-rate-limit`),
-      customResponseBodies: [
-        {
-          key: "tooManyRequests",
-          contentType: "APPLICATION_JSON",
-          content: JSON.stringify({
-            error: "Too many requests. Please wait a few minutes and try again.",
-          }),
-        },
-      ],
-      rules: API_RATE_LIMITS.map(({ name, path, limit }, priority) => ({
-        name: `rate-limit-${name}`,
-        priority,
-        action: {
-          block: {
-            customResponse: {
-              responseCode: 429,
-              customResponseBodyKey: "tooManyRequests",
-            },
-          },
-        },
-        statement: {
-          rateBasedStatement: {
-            limit,
-            evaluationWindowSec: 300,
-            aggregateKeyType: "IP",
-            scopeDownStatement: {
-              byteMatchStatement: {
-                searchString: path,
-                positionalConstraint: "STARTS_WITH",
-                fieldToMatch: { uriPath: {} },
-                textTransformations: [{ priority: 0, type: "LOWERCASE" }],
-              },
-            },
-          },
-        },
-        visibilityConfig: visibility(`${$app.stage}-rate-limit-${name}`),
-      })),
-    },
-    { provider: usEast1 },
-  );
-}

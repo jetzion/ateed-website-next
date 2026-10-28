@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { formatPSIResults, checkSecurityHeaders } from "@/lib/audit";
 import type { AuditRequest } from "@/lib/audit";
 import { sendAuditNotification } from "@/lib/email";
+import { getClientIP, isWithinRateLimit } from "@/lib/rateLimit";
 
 function isValidUrl(str: string): boolean {
   try {
@@ -17,6 +18,13 @@ function isValidEmail(email: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  if (!(await isWithinRateLimit("audit", getClientIP(request), 5, 3600))) {
+    return NextResponse.json(
+      { error: "Too many audit requests. Please try again in an hour." },
+      { status: 429 },
+    );
+  }
+
   // Parse body
   let body: AuditRequest;
   try {
