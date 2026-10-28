@@ -25,6 +25,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (
+    name.length > 80 ||
+    email.length > 254 ||
+    phone.length > 30 ||
+    (note?.length ?? 0) > 1000
+  ) {
+    return NextResponse.json(
+      { error: "One or more fields are too long." },
+      { status: 400 }
+    );
+  }
+
   // Basic email format check
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json(
@@ -33,7 +45,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const conversationContext = conversation ?? [];
+  const conversationContext = (conversation ?? []).slice(-100);
 
   // Send email notification (includes full chat + contact info)
   try {

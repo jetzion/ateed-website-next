@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { formatPSIResults, checkSecurityHeaders } from "@/lib/audit";
 import type { AuditRequest } from "@/lib/audit";
-import { sendAuditNotification, sendAuditResultsToUser } from "@/lib/email";
+import { sendAuditNotification } from "@/lib/email";
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const MAX_AUDITS_PER_WINDOW = 5;
@@ -80,6 +80,19 @@ export async function POST(request: NextRequest) {
   if (!url || !name || !email) {
     return NextResponse.json(
       { error: "URL, name, and email are required." },
+      { status: 400 },
+    );
+  }
+
+  if (
+    url.length > 500 ||
+    name.length > 80 ||
+    email.length > 254 ||
+    (phone?.length ?? 0) > 30 ||
+    (company?.length ?? 0) > 100
+  ) {
+    return NextResponse.json(
+      { error: "One or more fields are too long." },
       { status: 400 },
     );
   }
@@ -172,13 +185,10 @@ export async function POST(request: NextRequest) {
     // Format results
     const results = formatPSIResults(psiData, securityHeaders);
 
-    // Fire-and-forget: send email notifications (team + user) in parallel
+    // Fire-and-forget: notify the sales team
     const contact = { url: normalizedUrl, name, email, phone, company };
     sendAuditNotification(contact, results).catch((err) =>
       console.error("Failed to send team audit email:", err),
-    );
-    sendAuditResultsToUser(contact, results).catch((err) =>
-      console.error("Failed to send user audit email:", err),
     );
 
     return NextResponse.json(results);
