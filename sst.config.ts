@@ -62,7 +62,8 @@ export default $config({
     // CDN edge cache immediately instead of waiting out the 1h s-maxage TTL.
     const prodDistributionId = "E3KDAMVKB2YACU";
 
-    const webAcl = isProd || isStaging ? createApiRateLimitAcl() : undefined;
+    // Production only: its CloudFront Free flat-rate plan covers WAF costs.
+    const webAcl = isProd ? createApiRateLimitAcl() : undefined;
 
     new sst.aws.Nextjs("AteedWeb", {
       domain,
@@ -112,14 +113,14 @@ export default $config({
 
 /** Per-IP limits on the public API routes, keyed on CloudFront's viewer IP. */
 const API_RATE_LIMITS = [
-  { name: "chat", path: "/api/chat", limit: 20 },
+  { name: "chat", path: "/api/chat", limit: 10 },
   { name: "contact", path: "/api/contact", limit: 10 },
   { name: "audit", path: "/api/audit", limit: 10 },
 ];
 
 /**
  * WAF web ACL that returns 429 when one IP exceeds a route's limit within
- * 10 minutes. CloudFront-scoped ACLs must live in us-east-1.
+ * 5 minutes. CloudFront-scoped ACLs must live in us-east-1.
  */
 function createApiRateLimitAcl() {
   const usEast1 = new aws.Provider("UsEast1", { region: "us-east-1" });
@@ -158,7 +159,7 @@ function createApiRateLimitAcl() {
         statement: {
           rateBasedStatement: {
             limit,
-            evaluationWindowSec: 600,
+            evaluationWindowSec: 300,
             aggregateKeyType: "IP",
             scopeDownStatement: {
               byteMatchStatement: {
