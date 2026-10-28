@@ -140,7 +140,7 @@ export function Hero({ data }: HeroProps) {
   return (
     <section
       ref={containerRef}
-      className="hero-section relative min-h-[100svh] flex items-center overflow-x-clip bg-bg-primary"
+      className="hero-section relative min-h-[75svh] pt-16 lg:pt-20 flex items-center overflow-x-clip bg-bg-primary"
     >
       {/* Grain texture overlay */}
       <div className="hero-grain" />
@@ -237,7 +237,7 @@ export function Hero({ data }: HeroProps) {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 lg:px-8 relative z-10 -mt-14">
+      <div className="container mx-auto px-4 lg:px-8 relative z-10">
         <div className="flex items-center justify-between gap-8 lg:gap-16">
           {/* Left: text */}
           <div className="max-w-xl flex-1">
