@@ -89,7 +89,7 @@ export function Services({ data }: ServicesProps) {
     <section
       ref={sectionRef}
       id="services"
-      className="py-24 lg:py-32 bg-bg-primary"
+      className="py-24 lg:py-32 bg-bg-cream"
     >
       <div className="container mx-auto px-4 lg:px-8">
         <FadeIn>
@@ -123,7 +123,7 @@ export function Services({ data }: ServicesProps) {
                     open();
                   }
                 }}
-                className={`service-card bg-white border border-black/[0.06] p-6 lg:p-8 group transition-all duration-300 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--card-accent)] ${
+                className={`service-card bg-white border border-black/[0.08] border-t-[3px] border-t-[color:var(--card-accent)] p-6 lg:p-8 group transition-all duration-300 rounded-lg shadow-[0_2px_8px_rgba(28,25,23,0.06)] hover:shadow-[0_12px_28px_rgba(28,25,23,0.12)] hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--card-accent)] ${
                   hasModal ? "cursor-pointer" : ""
                 }`}
                 style={
@@ -144,7 +144,7 @@ export function Services({ data }: ServicesProps) {
                 {/* Large decorative number — tinted with card accent */}
                 <span
                   className="block font-serif text-4xl lg:text-5xl font-normal select-none mb-3 transition-colors duration-500"
-                  style={{ color: `${color}18` }}
+                  style={{ color: `${color}33` }}
                 >
                   {String(index + 1).padStart(2, "0")}
                 </span>
