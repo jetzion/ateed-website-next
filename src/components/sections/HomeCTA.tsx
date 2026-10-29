@@ -14,13 +14,13 @@ export function HomeCTA() {
       />
 
       <div className="container mx-auto px-4 lg:px-8 relative z-10 text-center">
-        <div className="max-w-3xl mx-auto">
+        <div>
           <TextReveal
             as="h2"
-            className="font-serif heading-lg font-normal text-white mb-6"
+            className="font-serif heading-lg heading-one-line font-normal text-white mb-6"
             stagger={0.04}
           >
-            Ready to build something remarkable?
+            Ready to solve a business challenge with the right technology?
           </TextReveal>
 
           <FadeIn delay={0.3}>

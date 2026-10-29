@@ -84,6 +84,28 @@ main {
   letter-spacing: -0.02em;
 }
 
+/* Home CTA heading on one line from lg up. Its text is ~24.9em wide in
+   Newsreader, so each size fits that breakpoint's container (960 / 1216 /
+   1472px of text width) with room to spare. Wraps normally on smaller screens. */
+@media (width >= 64rem) {
+  .heading-one-line {
+    font-size: 2.25rem;
+    white-space: nowrap;
+  }
+}
+
+@media (width >= 80rem) {
+  .heading-one-line {
+    font-size: 2.75rem;
+  }
+}
+
+@media (width >= 96rem) {
+  .heading-one-line {
+    font-size: 3.25rem;
+  }
+}
+
 .heading-md {
   font-size: clamp(1.5rem, 2vw + 0.5rem, 2.5rem);
   line-height: 1.2;
