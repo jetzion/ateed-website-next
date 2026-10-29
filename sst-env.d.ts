@@ -46,6 +46,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "RateLimits": {
+      "name": string
+      "type": "sst.aws.Dynamo"
+    }
     "ResendApiKey": {
       "type": "sst.sst.Secret"
       "value": string
