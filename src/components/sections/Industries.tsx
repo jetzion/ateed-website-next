@@ -6,6 +6,7 @@ import { useGSAP, gsap } from "@/hooks/useGSAP";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { ScrollCue } from "@/components/ui/ScrollCue";
+import { contentfulImageUrl } from "@/lib/contentfulImage";
 
 // Accent per card position (order is set in Contentful).
 const INDUSTRY_ACCENTS = [
@@ -64,12 +65,6 @@ export function Industries({ data }: IndustriesProps) {
     );
   }, [data]);
 
-  const getImageUrl = (industry: Industry) => {
-    const url = industry.fields?.image?.fields?.file?.url;
-    if (!url) return null;
-    return url.startsWith("//") ? `https:${url}` : url;
-  };
-
   if (!data || data.length === 0) return null;
 
   return (
@@ -83,7 +78,11 @@ export function Industries({ data }: IndustriesProps) {
 
         <div ref={listRef} className="flex flex-col gap-5">
           {data.map((industry, index) => {
-            const imageUrl = getImageUrl(industry);
+            // Image box is up to ~660px wide; 1400px covers 2x screens.
+            const imageUrl = contentfulImageUrl(
+              industry.fields?.image?.fields?.file?.url,
+              1400,
+            );
             const accent = INDUSTRY_ACCENTS[index % INDUSTRY_ACCENTS.length];
             const imageRight = index % 2 === 0;
 
