@@ -96,10 +96,10 @@ export function Services({ data }: ServicesProps) {
           <SectionHeading eyebrow="What We Do">Services</SectionHeading>
         </FadeIn>
 
-        {/* 2-column grid of numbered service cards */}
+        {/* Grid of numbered service cards: 1 / 2 / 3 columns by breakpoint */}
         <div
           ref={cardsRef}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5"
         >
           {data.map((service, index) => {
             const color = SERVICE_COLORS[index % SERVICE_COLORS.length];
