@@ -6,9 +6,14 @@ import { TextReveal } from "@/components/animations/TextReveal";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 
+/** Shown when the Contentful "Intro Text" field is empty. */
+const DEFAULT_INTRO =
+  "From concept to code — we build custom web apps, mobile platforms, and AI solutions that scale with your ambitions.";
+
 interface HeroProps {
   data?: {
     fields?: {
+      introText?: string;
       heroImage?: {
         fields?: {
           file?: {
@@ -261,8 +266,7 @@ export function Hero({ data }: HeroProps) {
 
             <FadeIn delay={0.6}>
               <p className="text-lg md:text-xl text-text-secondary leading-relaxed max-w-xl mb-8">
-                From concept to code — we build custom web apps, mobile
-                platforms, and AI solutions that scale with your ambitions.
+                {data?.fields?.introText || DEFAULT_INTRO}
               </p>
             </FadeIn>
 
