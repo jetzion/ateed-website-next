@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useGSAP, gsap } from "@/hooks/useGSAP";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
 interface TeamMember {
   fields: {
@@ -158,6 +159,7 @@ export function Team({ data }: TeamProps) {
           })}
         </div>
       </div>
+      <ScrollCue className="bottom-6" />
     </section>
   );
 }

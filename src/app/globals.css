@@ -191,6 +191,11 @@ main {
   mix-blend-mode: multiply;
 }
 
+/* Section scroll cues point to the next section, so the last one has none. */
+main > section:last-of-type .scroll-cue-auto {
+  display: none;
+}
+
 /* Hero scroll cue — entrance (CSS-driven so it survives without GSAP) */
 .scroll-cue {
   animation: scrollCueIn 0.8s ease-out 0.6s both;

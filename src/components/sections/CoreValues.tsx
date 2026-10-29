@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { useGSAP, gsap } from "@/hooks/useGSAP";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
 // Accent colors matching Services section editorial style
 const VALUE_COLORS = [
@@ -65,7 +66,7 @@ export function CoreValues({ data }: CoreValuesProps) {
   }
 
   return (
-    <section ref={sectionRef} className="py-20 lg:py-28 bg-bg-primary">
+    <section ref={sectionRef} className="relative pt-20 pb-28 lg:py-28 bg-bg-primary">
       <div className="container mx-auto px-4 lg:px-8">
         <FadeIn>
           <SectionHeading eyebrow="Our Values">
@@ -126,6 +127,7 @@ export function CoreValues({ data }: CoreValuesProps) {
           )}
         </div>
       </div>
+      <ScrollCue className="bottom-6" />
     </section>
   );
 }

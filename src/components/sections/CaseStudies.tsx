@@ -4,6 +4,7 @@ import { useRef, useState, useCallback } from "react";
 import { useGSAP, gsap } from "@/hooks/useGSAP";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
 // Industry accent colors — matches the palette used across the site
 const INDUSTRY_COLORS: Record<string, string> = {
@@ -124,7 +125,7 @@ export function CaseStudies({ data }: CaseStudiesProps) {
   const quote = cleanQuote(study.fields.clientFeedback);
 
   return (
-    <section className="py-24 lg:py-32 bg-bg-blue">
+    <section className="relative py-24 lg:py-32 bg-bg-blue">
       <div className="container mx-auto px-4 lg:px-8">
         <FadeIn>
           <SectionHeading eyebrow="Case Studies">Selected work</SectionHeading>
@@ -283,6 +284,7 @@ export function CaseStudies({ data }: CaseStudiesProps) {
           )}
         </div>
       </div>
+      <ScrollCue className="bottom-6" />
     </section>
   );
 }

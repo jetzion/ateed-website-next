@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useGSAP, gsap } from "@/hooks/useGSAP";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
 const INDUSTRY_ACCENTS = [
   "#3B8DD6", // Retail — blue
@@ -71,7 +72,7 @@ export function Industries({ data }: IndustriesProps) {
   if (!data || data.length === 0) return null;
 
   return (
-    <section className="py-24 lg:py-32 bg-bg-blue">
+    <section className="relative py-24 lg:py-32 bg-bg-blue">
       <div className="container mx-auto px-4 lg:px-8">
         <FadeIn>
           <SectionHeading eyebrow="Industries">
@@ -159,6 +160,7 @@ export function Industries({ data }: IndustriesProps) {
           })}
         </div>
       </div>
+      <ScrollCue className="bottom-6" />
     </section>
   );
 }
