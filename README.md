@@ -40,8 +40,8 @@ All page content is in Contentful (space `750wikp5ao9z`, environment `master`).
 Published changes go live within an hour, or immediately if the revalidation
 webhook (`/api/revalidate`) is configured.
 
-- **Service order:** each "Our Services" entry has an **Order** number; lowest
-  shows first.
+- **Service and sector order:** each "Our Services" and "Industries We Serve"
+  entry has an **Order** number; lowest shows first.
 - **Home hero paragraph:** "Hero Section" entry with Page `Home`, field
   **Intro Text**. The heading and label above it are still in code
   (`src/components/sections/Hero.tsx`).
