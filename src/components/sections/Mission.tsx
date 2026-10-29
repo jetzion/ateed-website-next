@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useGSAP, gsap } from "@/hooks/useGSAP";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
 interface MissionProps {
   data?: {
@@ -116,6 +117,7 @@ export function Mission({ data }: MissionProps) {
           </FadeIn>
         </div>
       </div>
+      <ScrollCue className="bottom-6" />
     </section>
   );
 }

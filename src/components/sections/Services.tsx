@@ -6,6 +6,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
 // Distinct accent color per service — muted, sophisticated tones
 const SERVICE_COLORS = [
@@ -89,7 +90,7 @@ export function Services({ data }: ServicesProps) {
     <section
       ref={sectionRef}
       id="services"
-      className="py-24 lg:py-32 bg-bg-cream"
+      className="relative py-24 lg:py-32 bg-bg-cream"
     >
       <div className="container mx-auto px-4 lg:px-8">
         <FadeIn>
@@ -222,6 +223,7 @@ export function Services({ data }: ServicesProps) {
           )}
         </div>
       </Modal>
+      <ScrollCue className="bottom-6" />
     </section>
   );
 }

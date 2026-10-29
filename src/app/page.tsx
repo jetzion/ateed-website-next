@@ -142,8 +142,8 @@ export default async function HomePage() {
       <Mission data={mission?.[0]} />
       <Services data={services ?? []} />
       <Industries data={industries ?? []} />
-      <TechStack data={techStack ?? []} />
       <CaseStudies data={caseStudies ?? []} />
+      <TechStack data={techStack ?? []} />
       <HomeCTA />
     </>
   );

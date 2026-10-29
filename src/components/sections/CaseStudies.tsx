@@ -4,6 +4,7 @@ import { useRef, useState, useCallback } from "react";
 import { useGSAP, gsap } from "@/hooks/useGSAP";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
 // Industry accent colors — matches the palette used across the site
 const INDUSTRY_COLORS: Record<string, string> = {
@@ -124,26 +125,29 @@ export function CaseStudies({ data }: CaseStudiesProps) {
   const quote = cleanQuote(study.fields.clientFeedback);
 
   return (
-    <section className="py-24 lg:py-32 bg-bg-blue">
+    <section className="relative py-24 lg:py-32 bg-bg-cream">
       <div className="container mx-auto px-4 lg:px-8">
         <FadeIn>
           <SectionHeading eyebrow="Case Studies">Selected work</SectionHeading>
         </FadeIn>
 
-        {/* Glassmorphic card */}
+        {/* Card — same treatment as the Services cards; the top edge takes
+            the current case study's accent. */}
         <div
           ref={contentRef}
-          className="rounded-2xl overflow-hidden"
-          style={{
-            background: "rgba(255,255,255,0.55)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            border: "1px solid rgba(59,141,214,0.08)",
-            boxShadow:
-              "0 4px 24px rgba(30,80,160,0.04), 0 1px 3px rgba(0,0,0,0.02)",
-          }}
+          className="bg-white border border-black/[0.08] border-t-[3px] border-t-[color:var(--card-accent)] rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(28,25,23,0.06)] transition-colors duration-500"
+          style={{ "--card-accent": accent } as React.CSSProperties}
         >
-          <div className="case-study-inner p-6 md:p-10 lg:p-12">
+          <div className="case-study-inner relative p-6 md:p-10 lg:p-12">
+            {/* Large decorative case number — tinted with the accent */}
+            <span
+              className="absolute top-5 right-6 md:top-8 md:right-10 font-serif text-4xl lg:text-5xl font-normal select-none"
+              style={{ color: `${accent}33` }}
+              aria-hidden="true"
+            >
+              {String(currentIndex + 1).padStart(2, "0")}
+            </span>
+
             {/* Industry tag */}
             {industry && (
               <span
@@ -198,11 +202,14 @@ export function CaseStudies({ data }: CaseStudiesProps) {
 
             {/* Client testimonial */}
             {quote && (
-              <div className="relative">
+              <div
+                className="relative rounded-lg p-5 md:p-6"
+                style={{ backgroundColor: `${accent}0A` }}
+              >
                 {/* Large decorative quote mark */}
                 <span
-                  className="absolute -top-3 -left-1 font-serif text-[4rem] leading-none select-none pointer-events-none"
-                  style={{ color: `${accent}10` }}
+                  className="absolute -top-2 left-2 font-serif text-[4rem] leading-none select-none pointer-events-none"
+                  style={{ color: `${accent}26` }}
                 >
                   &ldquo;
                 </span>
@@ -283,6 +290,7 @@ export function CaseStudies({ data }: CaseStudiesProps) {
           )}
         </div>
       </div>
+      <ScrollCue className="bottom-6" />
     </section>
   );
 }

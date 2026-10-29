@@ -1,20 +1,34 @@
+"use client";
+
 interface ScrollCueProps {
-  /** Id of the section to scroll to, without the "#". */
-  targetId: string;
+  /**
+   * Id of the section to scroll to, without the "#". When omitted, the cue
+   * scrolls to the next <section> on the page and is hidden in the page's last
+   * section (see .scroll-cue-auto in globals.css).
+   */
+  targetId?: string;
+  /** Distance from the bottom of the section. */
+  className?: string;
+}
+
+const CUE_CLASSES =
+  "scroll-cue group absolute left-1/2 z-10 flex cursor-pointer flex-col items-center gap-2.5 rounded-lg p-2 text-accent transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2";
+
+/** Scroll smoothly to the first <section> after the one containing `el`. */
+function scrollToNextSection(el: HTMLElement) {
+  let next = el.closest("section")?.nextElementSibling;
+  while (next && next.tagName !== "SECTION") next = next.nextElementSibling;
+  next?.scrollIntoView({ behavior: "smooth" });
 }
 
 /**
  * Animated "Scroll" label with two chevrons, pinned to the bottom center of
- * the nearest positioned ancestor. A plain anchor, so it works without JS
- * (html has scroll-behavior: smooth). Animation lives in globals.css.
+ * its section. With `targetId` it is a plain anchor, so it works without JS.
+ * Animation lives in globals.css.
  */
-export function ScrollCue({ targetId }: ScrollCueProps) {
-  return (
-    <a
-      href={`#${targetId}`}
-      aria-label="Scroll to next section"
-      className="scroll-cue group absolute bottom-8 left-1/2 z-10 flex cursor-pointer flex-col items-center gap-2.5 rounded-lg p-2 text-accent transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-    >
+export function ScrollCue({ targetId, className = "bottom-8" }: ScrollCueProps) {
+  const content = (
+    <>
       <span className="scroll-cue-label text-xs font-medium uppercase tracking-[0.25em] text-text-secondary transition-colors group-hover:text-text-primary">
         Scroll
       </span>
@@ -37,6 +51,29 @@ export function ScrollCue({ targetId }: ScrollCueProps) {
           </svg>
         ))}
       </div>
-    </a>
+    </>
+  );
+
+  if (targetId) {
+    return (
+      <a
+        href={`#${targetId}`}
+        aria-label="Scroll to next section"
+        className={`${CUE_CLASSES} ${className}`}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      aria-label="Scroll to next section"
+      onClick={(e) => scrollToNextSection(e.currentTarget)}
+      className={`scroll-cue-auto ${CUE_CLASSES} ${className}`}
+    >
+      {content}
+    </button>
   );
 }

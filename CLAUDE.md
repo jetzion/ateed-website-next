@@ -96,7 +96,9 @@ statically generated with ISR (`revalidate = 3600`); `/api/revalidate` is the
 Contentful webhook for on-demand refresh (it also invalidates CloudFront).
 - Space ID: `750wikp5ao9z`, environment `master`
 - Content types: `heroSection`, `ourMission`, `ourServices`, `caseStudies`, `industriesWeServe`, `comprehensiveTechnologyStack`, `blog` (with linked `author`), `team`, `coreValues`, `contact`, `privacyPolicy`, `footer`
-- `ourServices` is sorted by its Integer `order` field. Add a field in Contentful
+- `ourServices` and `industriesWeServe` are sorted by their Integer `order`
+  field. `heroSection` (page `Home`) has `introText` for the hero paragraph.
+  Add a field in Contentful
   before deploying code that sorts or filters by it; Contentful rejects queries
   on unknown fields.
 

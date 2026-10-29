@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useGSAP, gsap } from "@/hooks/useGSAP";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
 // Per-category accent colors
 const CATEGORY_COLORS: Record<string, string> = {
@@ -134,7 +135,7 @@ export function TechStack({ data }: TechStackProps) {
   if (!data || data.length === 0) return null;
 
   return (
-    <section ref={sectionRef} className="py-24 lg:py-32 bg-bg-primary">
+    <section ref={sectionRef} className="relative py-24 lg:py-32 bg-bg-primary">
       <div className="container mx-auto px-4 lg:px-8">
         <FadeIn>
           <SectionHeading eyebrow="Technology">Our stack</SectionHeading>
@@ -215,6 +216,7 @@ export function TechStack({ data }: TechStackProps) {
           })}
         </div>
       </div>
+      <ScrollCue className="bottom-6" />
     </section>
   );
 }

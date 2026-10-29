@@ -5,13 +5,15 @@ import Image from "next/image";
 import { useGSAP, gsap } from "@/hooks/useGSAP";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
+// Accent per card position (order is set in Contentful).
 const INDUSTRY_ACCENTS = [
-  "#3B8DD6", // Retail — blue
-  "#E8762D", // Logistics — orange
-  "#059669", // Healthcare — emerald
-  "#7C3AED", // Manufacturing — violet
-  "#0891B2", // Services — cyan
+  "#3B8DD6", // 01 — blue
+  "#E8762D", // 02 — orange
+  "#059669", // 03 — emerald
+  "#7C3AED", // 04 — violet
+  "#0891B2", // 05 — cyan
 ];
 
 interface Industry {
@@ -71,7 +73,7 @@ export function Industries({ data }: IndustriesProps) {
   if (!data || data.length === 0) return null;
 
   return (
-    <section className="py-24 lg:py-32 bg-bg-blue">
+    <section className="relative py-24 lg:py-32 bg-bg-blue">
       <div className="container mx-auto px-4 lg:px-8">
         <FadeIn>
           <SectionHeading eyebrow="Industries">
@@ -88,25 +90,9 @@ export function Industries({ data }: IndustriesProps) {
             return (
               <div
                 key={industry.sys.id}
-                className="industry-card group rounded-2xl overflow-hidden transition-all duration-300"
-                style={{
-                  "--card-accent": accent,
-                  background: "rgba(255,255,255,0.55)",
-                  backdropFilter: "blur(16px)",
-                  WebkitBackdropFilter: "blur(16px)",
-                  border: "1px solid rgba(59,141,214,0.08)",
-                  boxShadow:
-                    "0 4px 24px rgba(30,80,160,0.04), 0 1px 3px rgba(0,0,0,0.02)",
-                } as React.CSSProperties}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = `0 8px 40px ${accent}15, 0 2px 8px rgba(0,0,0,0.04)`;
-                  e.currentTarget.style.borderColor = `${accent}20`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 24px rgba(30,80,160,0.04), 0 1px 3px rgba(0,0,0,0.02)";
-                  e.currentTarget.style.borderColor = "rgba(59,141,214,0.08)";
-                }}
+                // Same card treatment as the Services section.
+                className="industry-card group bg-white border border-black/[0.08] border-t-[3px] border-t-[color:var(--card-accent)] rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(28,25,23,0.06)] hover:shadow-[0_12px_28px_rgba(28,25,23,0.12)] hover:-translate-y-1 transition-all duration-300"
+                style={{ "--card-accent": accent } as React.CSSProperties}
               >
                 <div
                   className={`flex flex-col ${
@@ -115,6 +101,15 @@ export function Industries({ data }: IndustriesProps) {
                 >
                   {/* Text content */}
                   <div className="flex-1 p-6 md:p-8 lg:p-10 flex flex-col justify-center relative overflow-hidden">
+                    {/* Large decorative number — tinted with card accent */}
+                    <span
+                      className="block font-serif text-4xl lg:text-5xl font-normal select-none mb-3"
+                      style={{ color: `${accent}33` }}
+                      aria-hidden="true"
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+
                     {/* Heading + accent line wrapper */}
                     <div className="w-fit mb-4">
                       <h3 className="font-serif text-xl md:text-2xl font-normal text-text-primary transition-colors duration-300 group-hover:text-[var(--card-accent)]">
@@ -159,6 +154,7 @@ export function Industries({ data }: IndustriesProps) {
           })}
         </div>
       </div>
+      <ScrollCue className="bottom-6" />
     </section>
   );
 }
