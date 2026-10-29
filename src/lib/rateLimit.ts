@@ -11,18 +11,14 @@ const client = new DynamoDBClient({});
 /**
  * Client IP used as the rate-limit key.
  *
- * TEMPORARY: logs the candidate headers so we can prove which one CloudFront
- * sets to the real viewer IP. Keyed on the first X-Forwarded-For entry until
- * then, which never blocks real visitors but can be spoofed.
+ * CloudFront sets `CloudFront-Viewer-Address` ("ip:port", IPv6 included) and
+ * overwrites any value the client sends. X-Forwarded-For is not used: behind
+ * this setup it arrives exactly as the client sent it.
  */
 export function getClientIP(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for") ?? "";
-  console.log("ip-debug", {
-    xForwardedFor: forwarded,
-    xRealIp: request.headers.get("x-real-ip"),
-    cloudfrontViewerAddress: request.headers.get("cloudfront-viewer-address"),
-  });
-  return forwarded.split(",")[0].trim() || "unknown";
+  const address = request.headers.get("cloudfront-viewer-address");
+  if (!address) return "unknown";
+  return address.slice(0, address.lastIndexOf(":"));
 }
 
 /**
