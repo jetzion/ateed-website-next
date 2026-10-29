@@ -102,7 +102,8 @@ export function AuditPageClient() {
   return (
     <section
       ref={sectionRef}
-      className="relative pt-10 lg:pt-14 pb-20 lg:pb-28 overflow-x-clip"
+      id="audit-tool"
+      className="scroll-mt-24 relative pt-10 lg:pt-14 pb-20 lg:pb-28 overflow-x-clip"
       style={{
         background:
           "linear-gradient(to bottom, var(--bg-cream), var(--bg-blue))",

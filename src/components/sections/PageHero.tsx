@@ -5,15 +5,24 @@ import Image from "next/image";
 import { useGSAP, gsap, ScrollTrigger } from "@/hooks/useGSAP";
 import { TextReveal } from "@/components/animations/TextReveal";
 import { FadeIn } from "@/components/animations/FadeIn";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
 interface PageHeroProps {
   heading: string;
   description?: string;
   backgroundImage?: string;
   imageAlt?: string;
+  /** Id of the section below; shows the scroll cue when set. */
+  nextSectionId?: string;
 }
 
-export function PageHero({ heading, description, backgroundImage, imageAlt }: PageHeroProps) {
+export function PageHero({
+  heading,
+  description,
+  backgroundImage,
+  imageAlt,
+  nextSectionId,
+}: PageHeroProps) {
   const heroRef = useRef<HTMLElement>(null);
   const orbsRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
@@ -62,7 +71,9 @@ export function PageHero({ heading, description, backgroundImage, imageAlt }: Pa
   return (
     <section
       ref={heroRef}
-      className="relative pt-36 md:pt-40 pb-20 md:pb-28 bg-bg-cream overflow-x-clip"
+      className={`relative pt-36 md:pt-40 ${
+        nextSectionId ? "pb-36 md:pb-40" : "pb-20 md:pb-28"
+      } bg-bg-cream overflow-x-clip`}
     >
       {/* Grain texture overlay */}
       <div className="hero-grain" />
@@ -155,6 +166,8 @@ export function PageHero({ heading, description, backgroundImage, imageAlt }: Pa
           )}
         </div>
       </div>
+
+      {nextSectionId && <ScrollCue targetId={nextSectionId} />}
     </section>
   );
 }

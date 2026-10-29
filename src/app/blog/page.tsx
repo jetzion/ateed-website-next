@@ -90,9 +90,10 @@ export default async function BlogPage() {
           "Latest stories and insights from Ateed Tech"
         }
         backgroundImage={backgroundImage}
+        nextSectionId="posts"
       />
 
-      <section className="py-20 lg:py-28 bg-bg-primary">
+      <section id="posts" className="scroll-mt-24 py-20 lg:py-28 bg-bg-primary">
         <div className="container mx-auto px-4 lg:px-8">
           {/* Featured Post */}
           {featuredPost && (

@@ -44,11 +44,13 @@ export default async function ContactPage() {
         heading={hero?.fields?.heading || "Contact Us"}
         description={hero?.fields?.description || "We'd love to hear from you"}
         backgroundImage={backgroundImage}
+        nextSectionId="contact-form"
       />
 
       {/* Contact Info + Form */}
       <section
-        className="relative pt-10 lg:pt-14 pb-20 lg:pb-28 overflow-x-clip"
+        id="contact-form"
+        className="scroll-mt-24 relative pt-10 lg:pt-14 pb-20 lg:pb-28 overflow-x-clip"
         style={{
           background:
             "linear-gradient(to bottom, var(--bg-cream), var(--bg-blue))",

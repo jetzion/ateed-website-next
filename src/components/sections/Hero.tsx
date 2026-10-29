@@ -5,6 +5,7 @@ import { useGSAP, gsap, ScrollTrigger } from "@/hooks/useGSAP";
 import { TextReveal } from "@/components/animations/TextReveal";
 import { FadeIn } from "@/components/animations/FadeIn";
 import { Button } from "@/components/ui/Button";
+import { ScrollCue } from "@/components/ui/ScrollCue";
 
 /** Shown when the Contentful "Intro Text" field is empty. */
 const DEFAULT_INTRO =
@@ -656,36 +657,7 @@ export function Hero({ data }: HeroProps) {
         </div>
       </div>
 
-      {/* Scroll cue — clickable: smooth-scrolls to the next section. Plain
-          anchor so it works without JS (html has scroll-behavior: smooth). */}
-      <a
-        href="#mission"
-        aria-label="Scroll to next section"
-        className="scroll-cue group absolute bottom-8 left-1/2 z-10 flex cursor-pointer flex-col items-center gap-2.5 rounded-lg p-2 text-accent transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-      >
-        <span className="scroll-cue-label text-xs font-medium uppercase tracking-[0.25em] text-text-secondary transition-colors group-hover:text-text-primary">
-          Scroll
-        </span>
-        <div className="scroll-chev-group flex flex-col items-center gap-[3px]">
-          {[0, 1].map((i) => (
-            <svg
-              key={i}
-              className={`scroll-chev ${i === 0 ? "scroll-chev-1" : "scroll-chev-2"}`}
-              width="20"
-              height="10"
-              viewBox="0 0 20 10"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M2 2l8 6 8-6" />
-            </svg>
-          ))}
-        </div>
-      </a>
+      <ScrollCue targetId="mission" />
     </section>
   );
 }

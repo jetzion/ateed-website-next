@@ -52,6 +52,7 @@ export default function FreeAuditPage() {
       <PageHero
         heading="Free Website Audit"
         description="Enter your URL and get an instant analysis of your website's performance, SEO, accessibility, and security — with actionable recommendations."
+        nextSectionId="audit-tool"
       />
       <AuditPageClient />
     </>

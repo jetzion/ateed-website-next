@@ -51,6 +51,7 @@ export default async function AboutPage() {
         heading={hero?.fields?.heading || "About Us"}
         description={hero?.fields?.description || "Learn more about Ateed Tech"}
         backgroundImage={backgroundImage}
+        nextSectionId={missionData[0] ? "mission" : undefined}
       />
 
       {missionData[0] && (
